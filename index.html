@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimetsu no Yaiba Platformer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        
+        <!-- Menu Screen -->
+        <div id="menu-screen">
+            <h1>KIMETSU ADVENTURE</h1>
+            <p>Ajude nosso herói 😠 a derrotar os demônios 😈 e restaurar a paz! Colete nichirins, evite os inimigos e alcance o santuário para vencer!</p>
+            
+            <div style="margin: 20px 0;">
+                <div class="character-option selected" data-character="😠">
+                    <span class="character-emoji">😠</span>
+                    <span class="character-name">Tanjiro (Raiva)</span>
+                </div>
+                <div class="character-option" data-character="😤">
+                    <span class="character-emoji">😤</span>
+                    <span class="character-name">Zenitsu (Determinado)</span>
+                </div>
+                <div class="character-option" data-character="💀">
+                    <span class="character-emoji">💀</span>
+                    <span class="character-name">Inosuke (Feroz)</span>
+                </div>
+            </div>
+            
+            <button id="start-btn" class="btn">Iniciar Jogo</button>
+            <button id="level-select-btn" class="btn">Selecionar Fase</button>
+        </div>
+        
+        <!-- Level Select Screen -->
+        <div id="level-select-screen">
+            <h2>SELECIONE A FASE</h2>
+            <button id="level1-btn" class="btn level-btn">Fase 1 - Floresta Assombrada</button>
+            <button id="level2-btn" class="btn level-btn">Fase 2 - Montanha Nevada</button>
+            <button id="level3-btn" class="btn level-btn">Fase 3 - Castelo de Muzan</button>
+            <button id="back-to-menu-btn" class="btn">Voltar ao Menu</button>
+        </div>
+        
+        <!-- Game Over Screen -->
+        <div id="game-over-screen">
+            <h2>GAME OVER</h2>
+            <p>Os demônios foram fortes demais! 😈</p>
+            <button id="restart-btn" class="btn">Tentar Novamente</button>
+            <button id="menu-after-game-over-btn" class="btn">Voltar ao Menu</button>
+        </div>
+        
+        <!-- Win Screen -->
+        <div id="win-screen">
+            <h2>VITÓRIA!</h2>
+            <p>Você derrotou todos os demônios e restaurou a paz! 🎉</p>
+            <button id="play-again-btn" class="btn">Jogar Novamente</button>
+            <button id="menu-after-win-btn" class="btn">Voltar ao Menu</button>
+        </div>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div id="lives">Vidas: <span id="lives-count">3</span> <span class="life-icon">❤️</span></div>
+            <div>Nichirins: <span id="coins-count">0</span> <span style="color: #4cc9f0;">💎</span></div>
+            <div>Fase: <span id="level-display">1</span></div>
+        </div>
+        
+        <!-- Instructions -->
+        <div id="instructions">
+            Setas ← → para mover | Espaço ou ↑ para pular | Z para atacar
+        </div>
+    </div>
+
+    <script src="script.js"> </script>
+</body>
+</html>
