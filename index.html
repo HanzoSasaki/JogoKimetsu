@@ -3,36 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kimetsu no Yaiba Platformer</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Kimetsu no Yaiba - Demon Slayer Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Michroma', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle, #1a1a2e 0%, #0d0d1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            width: 100vw;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #game-canvas {
+            background: #0d1b2a;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Screens */
+        #menu-screen, #level-select-screen, #game-over-screen, #win-screen, #trailer-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(13, 27, 42, 0.95);
+            color: white;
+            z-index: 20;
+            text-align: center;
+            padding: 30px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #menu-screen {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                              url('https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+        }
+
+        #game-over-screen {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                              url('https://images.unsplash.com/photo-1531315630201-bb15abeb1653?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+        }
+
+        #level-select-screen, #game-over-screen, #win-screen, #trailer-screen {
+            display: none;
+        }
+
+        #level-select-screen {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                              url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+        }
+
+        #trailer-screen {
+            background: #000;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 52px;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 3px 3px 0 #000;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #ff6b6b, #ff9e80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        h2 {
+            font-size: 42px;
+            margin-bottom: 25px;
+            color: #ff9e80;
+            text-shadow: 0 0 5px #ff6b6b, 2px 2px 0 #000;
+        }
+
+        p {
+            font-size: 20px;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            max-width: 85%;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #ff6b6b, #d00000);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            font-size: 20px;
+            margin: 15px;
+            cursor: pointer;
+            border-radius: 50px;
+            box-shadow: 0 6px 0 #8d0000, 0 10px 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+            min-width: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #8d0000, 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #8d0000, 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .level-btn {
+            width: 280px;
+            margin: 18px;
+            background: linear-gradient(to bottom, #4cc9f0, #036ee9);
+            box-shadow: 0 6px 0 #0144a3, 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .level-btn:hover {
+            box-shadow: 0 3px 0 #0144a3, 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: white;
+            font-size: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 3px solid #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+            display: flex;
+            gap: 25px;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Instructions */
+        #instructions {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            color: white;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        /* Character selection */
+        .character-option {
+            display: flex;
+            align-items: center;
+            margin: 15px;
+            padding: 15px;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 107, 107, 0.1);
+            width: 300px;
+        }
+
+        .character-option:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            transform: scale(1.05);
+        }
+
+        .character-option.selected {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.3);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .character-emoji {
+            font-size: 50px;
+            margin-right: 20px;
+            filter: drop-shadow(2px 2px 2px #000);
+        }
+
+        .character-name {
+            font-size: 22px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Trailer screen */
+        #trailer-container {
+            width: 85%;
+            height: 70%;
+            background: #000;
+            border: 5px solid #ff6b6b;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.7);
+        }
+
+        #youtube-trailer {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Loading screen */
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 10px solid rgba(255, 107, 107, 0.3);
+            border-radius: 50%;
+            border-top-color: #ff6b6b;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Particles background */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 107, 107, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-1000%) translateX(100%); opacity: 0; }
+        }
+
+        /* Health bar */
+        #health-bar {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 200px;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            border: 2px solid #ff6b6b;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        #health-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, #ff0000, #ff6b6b);
+            border-radius: 13px;
+            transition: width 0.3s;
+        }
+
+        /* Level complete effect */
+        .level-complete {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 10%, rgba(255, 107, 107, 0.8) 70%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+            font-size: 60px;
+            color: white;
+            text-shadow: 0 0 10px #ff0000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Game Over Screen Styling */
+        #game-over-content {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 20px;
+            border: 5px solid #ff6b6b;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
+            max-width: 600px;
+        }
+
+        #game-over-title {
+            font-size: 72px;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000;
+            margin-bottom: 20px;
+        }
+
+        #game-over-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        /* Audio Controls */
+        #audio-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .audio-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid #ff6b6b;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .audio-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.1);
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="game-container">
-        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- Loading Screen -->
+        <div id="loading-screen">
+            <div class="loading-spinner"></div>
+            <h2>Carregando Kimetsu no Yaiba...</h2>
+        </div>
         
         <!-- Menu Screen -->
         <div id="menu-screen">
-            <h1>KIMETSU ADVENTURE</h1>
-            <p>Ajude nosso herói 😠 a derrotar os demônios 😈 e restaurar a paz! Colete nichirins, evite os inimigos e alcance o santuário para vencer!</p>
+            <h1>KIMETSU NO YAIBA</h1>
+            <p>Entre no mundo de Demon Slayer! Ajude nosso herói a derrotar os demônios e restaurar a paz. Use sua lâmina Nichirin, evite os inimigos e alcance o santuário para vencer!</p>
             
-            <div style="margin: 20px 0;">
+            <div style="margin: 25px 0;">
                 <div class="character-option selected" data-character="😠">
                     <span class="character-emoji">😠</span>
-                    <span class="character-name">Tanjiro (Raiva)</span>
+                    <span class="character-name">Tanjiro Kamado (Raiva)</span>
                 </div>
                 <div class="character-option" data-character="😤">
                     <span class="character-emoji">😤</span>
-                    <span class="character-name">Zenitsu (Determinado)</span>
+                    <span class="character-name">Zenitsu Agatsuma (Determinado)</span>
                 </div>
                 <div class="character-option" data-character="💀">
                     <span class="character-emoji">💀</span>
-                    <span class="character-name">Inosuke (Feroz)</span>
+                    <span class="character-name">Inosuke Hashibira (Feroz)</span>
                 </div>
             </div>
             
             <button id="start-btn" class="btn">Iniciar Jogo</button>
             <button id="level-select-btn" class="btn">Selecionar Fase</button>
+            
+            <!-- Audio Controls -->
+            <div id="audio-controls">
+                <div class="audio-btn" id="bgm-toggle">♪</div>
+                <div class="audio-btn" id="sfx-toggle">🔊</div>
+            </div>
         </div>
         
         <!-- Level Select Screen -->
@@ -46,33 +460,1301 @@
         
         <!-- Game Over Screen -->
         <div id="game-over-screen">
-            <h2>GAME OVER</h2>
-            <p>Os demônios foram fortes demais! 😈</p>
-            <button id="restart-btn" class="btn">Tentar Novamente</button>
-            <button id="menu-after-game-over-btn" class="btn">Voltar ao Menu</button>
+            <div id="game-over-content">
+                <h2 id="game-over-title">GAME OVER</h2>
+                <p>Os demônios foram fortes demais! Mas a luta ainda não acabou... 😈</p>
+                <div id="game-over-buttons">
+                    <button id="restart-btn" class="btn">Tentar Novamente</button>
+                    <button id="give-up-btn" class="btn">Desistir</button>
+                </div>
+            </div>
         </div>
         
         <!-- Win Screen -->
         <div id="win-screen">
-            <h2>VITÓRIA!</h2>
-            <p>Você derrotou todos os demônios e restaurou a paz! 🎉</p>
+            <h2>MISSÃO CUMPRIDA!</h2>
+            <p>Você derrotou todos os demônios e restaurou a paz! Agora assista ao trailer do filme! 🎉</p>
+            <button id="watch-trailer-btn" class="btn">Assistir Trailer</button>
             <button id="play-again-btn" class="btn">Jogar Novamente</button>
-            <button id="menu-after-win-btn" class="btn">Voltar ao Menu</button>
+        </div>
+        
+        <!-- Trailer Screen -->
+        <div id="trailer-screen">
+            <h2>KIMETSU NO YAIBA - TO THE HASHIRA TRAINING</h2>
+            <div id="trailer-container">
+                <iframe id="youtube-trailer" src="https://www.youtube.com/embed/3UiP4GwWNv0?rel=0&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <button id="back-after-trailer-btn" class="btn">Voltar ao Menu</button>
         </div>
         
         <!-- HUD -->
         <div id="hud">
-            <div id="lives">Vidas: <span id="lives-count">3</span> <span class="life-icon">❤️</span></div>
-            <div>Nichirins: <span id="coins-count">0</span> <span style="color: #4cc9f0;">💎</span></div>
-            <div>Fase: <span id="level-display">1</span></div>
+            <div class="hud-item">
+                <span>Vidas:</span>
+                <span id="lives-count">3</span>
+                <span style="color: #ff6b6b;">❤️</span>
+            </div>
+            <div class="hud-item">
+                <span>Nichirins:</span>
+                <span id="coins-count">0</span>
+                <span style="color: #4cc9f0;">💎</span>
+            </div>
+            <div class="hud-item">
+                <span>Fase:</span>
+                <span id="level-display">1</span>
+            </div>
+        </div>
+        
+        <!-- Health Bar -->
+        <div id="health-bar">
+            <div id="health-fill"></div>
         </div>
         
         <!-- Instructions -->
         <div id="instructions">
             Setas ← → para mover | Espaço ou ↑ para pular | Z para atacar
         </div>
+        
+        <!-- Level Complete Effect -->
+        <div class="level-complete" id="level-complete">
+            <h2>FASE CONCLUÍDA!</h2>
+        </div>
+        
+        <!-- Particles Background -->
+        <div class="particles" id="particles"></div>
     </div>
 
-    <script src="script.js"> </script>
+    <script>
+        // Game variables
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Screen elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const menuScreen = document.getElementById('menu-screen');
+        const levelSelectScreen = document.getElementById('level-select-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const winScreen = document.getElementById('win-screen');
+        const trailerScreen = document.getElementById('trailer-screen');
+        const levelComplete = document.getElementById('level-complete');
+        
+        // Buttons
+        const startBtn = document.getElementById('start-btn');
+        const levelSelectBtn = document.getElementById('level-select-btn');
+        const level1Btn = document.getElementById('level1-btn');
+        const level2Btn = document.getElementById('level2-btn');
+        const level3Btn = document.getElementById('level3-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const giveUpBtn = document.getElementById('give-up-btn');
+        const watchTrailerBtn = document.getElementById('watch-trailer-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const backAfterTrailerBtn = document.getElementById('back-after-trailer-btn');
+        
+        // Audio controls
+        const bgmToggle = document.getElementById('bgm-toggle');
+        const sfxToggle = document.getElementById('sfx-toggle');
+        
+        // HUD elements
+        const livesCount = document.getElementById('lives-count');
+        const coinsCount = document.getElementById('coins-count');
+        const levelDisplay = document.getElementById('level-display');
+        const healthFill = document.getElementById('health-fill');
+        
+        // Character selection
+        const characterOptions = document.querySelectorAll('.character-option');
+        let selectedCharacter = '😠';
+        
+        // Audio settings
+        let bgmEnabled = true;
+        let sfxEnabled = true;
+        
+        // Game state
+        let gameState = {
+            currentLevel: 1,
+            lives: 3,
+            playerCoins: 0,
+            gameRunning: false,
+            player: null,
+            platforms: [],
+            enemies: [],
+            coins: [],
+            flag: null,
+            gravity: 0.5,
+            keys: {},
+            backgrounds: [],
+            health: 100,
+            particles: [],
+            canvasWidth: window.innerWidth,
+            canvasHeight: window.innerHeight
+        };
+        
+        // Resize canvas to fullscreen
+        function resizeCanvas() {
+            gameState.canvasWidth = window.innerWidth;
+            gameState.canvasHeight = window.innerHeight;
+            canvas.width = gameState.canvasWidth;
+            canvas.height = gameState.canvasHeight;
+        }
+        
+        // Create particles for background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.innerHTML = '';
+            
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 10 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 15}s`;
+                particle.style.animationDuration = `${15 + Math.random() * 10}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Load background images
+        function loadBackgrounds() {
+            gameState.backgrounds = [
+                { // Forest background
+                    color: '#1b4332',
+                    elements: [
+                        { type: 'mountain', x: 100, y: 300, width: 200, height: 150, color: '#2d6a4f' },
+                        { type: 'mountain', x: 400, y: 320, width: 180, height: 130, color: '#2d6a4f' },
+                        { type: 'mountain', x: 650, y: 310, width: 160, height: 140, color: '#2d6a4f' },
+                        { type: 'tree', x: 200, y: 350, size: 40, color: '#40916c' },
+                        { type: 'tree', x: 500, y: 370, size: 35, color: '#40916c' },
+                        { type: 'tree', x: 700, y: 360, size: 45, color: '#40916c' },
+                        { type: 'sakura', x: 150, y: 100, size: 30, color: '#ff9ebb' },
+                        { type: 'sakura', x: 500, y: 80, size: 40, color: '#ff9ebb' },
+                        { type: 'sakura', x: 750, y: 120, size: 35, color: '#ff9ebb' }
+                    ]
+                },
+                { // Snow mountain background
+                    color: '#3a5a80',
+                    elements: [
+                        { type: 'mountain', x: 50, y: 280, width: 250, height: 180, color: '#588157' },
+                        { type: 'mountain', x: 350, y: 260, width: 220, height: 190, color: '#588157' },
+                        { type: 'mountain', x: 600, y: 300, width: 200, height: 150, color: '#588157' },
+                        { type: 'snow', x: 50, y: 280, width: 250, height: 20, color: '#f8f9fa' },
+                        { type: 'snow', x: 350, y: 260, width: 220, height: 20, color: '#f8f9fa' },
+                        { type: 'snow', x: 600, y: 300, width: 200, height: 20, color: '#f8f9fa' },
+                        { type: 'cloud', x: 100, y: 100, width: 120, height: 40, color: '#e9ecef' },
+                        { type: 'cloud', x: 500, y: 70, width: 150, height: 50, color: '#e9ecef' },
+                        { type: 'cloud', x: 700, y: 120, width: 100, height: 30, color: '#e9ecef' }
+                    ]
+                },
+                { // Castle background
+                    color: '#3d348b',
+                    elements: [
+                        { type: 'castle', x: 100, y: 200, width: 150, height: 200, color: '#6c757d' },
+                        { type: 'castle', x: 550, y: 180, width: 180, height: 220, color: '#6c757d' },
+                        { type: 'tower', x: 90, y: 150, width: 30, height: 50, color: '#495057' },
+                        { type: 'tower', x: 230, y: 150, width: 30, height: 50, color: '#495057' },
+                        { type: 'tower', x: 540, y: 130, width: 30, height: 50, color: '#495057' },
+                        { type: 'tower', x: 700, y: 130, width: 30, height: 50, color: '#495057' },
+                        { type: 'moon', x: 650, y: 50, size: 60, color: '#f8f9fa' },
+                        { type: 'star', x: 100, y: 60, size: 5, color: '#ffd60a' },
+                        { type: 'star', x: 200, y: 90, size: 3, color: '#ffd60a' },
+                        { type: 'star', x: 300, y: 40, size: 4, color: '#ffd60a' },
+                        { type: 'star', x: 400, y: 70, size: 6, color: '#ffd60a' }
+                    ]
+                }
+            ];
+        }
+        
+        // Draw background
+        function drawBackground(levelIndex) {
+            const bg = gameState.backgrounds[levelIndex - 1];
+            if (!bg) return;
+            
+            // Draw sky with gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, gameState.canvasHeight);
+            gradient.addColorStop(0, bg.color);
+            gradient.addColorStop(1, '#0d1b2a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, gameState.canvasWidth, gameState.canvasHeight);
+            
+            // Draw background elements
+            bg.elements.forEach(element => {
+                ctx.fillStyle = element.color;
+                
+                // Scale elements based on canvas size
+                const scaleX = gameState.canvasWidth / 900;
+                const scaleY = gameState.canvasHeight / 600;
+                
+                switch(element.type) {
+                    case 'mountain':
+                        ctx.beginPath();
+                        ctx.moveTo(element.x * scaleX, (element.y + element.height) * scaleY);
+                        ctx.lineTo((element.x + element.width/2) * scaleX, element.y * scaleY);
+                        ctx.lineTo((element.x + element.width) * scaleX, (element.y + element.height) * scaleY);
+                        ctx.closePath();
+                        ctx.fill();
+                        // Add mountain details
+                        ctx.strokeStyle = '#2d6a4f';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo((element.x + element.width/3) * scaleX, (element.y + element.height/2) * scaleY);
+                        ctx.lineTo((element.x + element.width/2) * scaleX, (element.y + element.height/3) * scaleY);
+                        ctx.lineTo((element.x + 2*element.width/3) * scaleX, (element.y + element.height/2) * scaleY);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'tree':
+                        // Tree trunk
+                        ctx.fillStyle = '#5a189a';
+                        ctx.fillRect(element.x * scaleX, element.y * scaleY, 15 * scaleX, element.size * scaleY);
+                        // Tree top
+                        ctx.fillStyle = element.color;
+                        ctx.beginPath();
+                        ctx.arc((element.x + 7) * scaleX, (element.y - 10) * scaleY, (element.size/2) * scaleX, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'snow':
+                        ctx.fillRect(element.x * scaleX, element.y * scaleY, element.width * scaleX, element.height * scaleY);
+                        break;
+                        
+                    case 'cloud':
+                        ctx.beginPath();
+                        ctx.ellipse(element.x * scaleX, element.y * scaleY, element.width/2 * scaleX, element.height/2 * scaleY, 0, 0, Math.PI * 2);
+                        ctx.ellipse((element.x + element.width/3) * scaleX, (element.y - element.height/3) * scaleY, element.width/3 * scaleX, element.height/2 * scaleY, 0, 0, Math.PI * 2);
+                        ctx.ellipse((element.x + 2*element.width/3) * scaleX, element.y * scaleY, element.width/3 * scaleX, element.height/2 * scaleY, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'castle':
+                        ctx.fillRect(element.x * scaleX, element.y * scaleY, element.width * scaleX, element.height * scaleY);
+                        // Windows
+                        ctx.fillStyle = '#ffd60a';
+                        for (let i = 0; i < 3; i++) {
+                            for (let j = 0; j < 2; j++) {
+                                ctx.fillRect((element.x + 20 + i*40) * scaleX, (element.y + 30 + j*50) * scaleY, 15 * scaleX, 25 * scaleY);
+                            }
+                        }
+                        // Castle roof
+                        ctx.fillStyle = '#d00000';
+                        ctx.beginPath();
+                        ctx.moveTo((element.x - 10) * scaleX, element.y * scaleY);
+                        ctx.lineTo((element.x + element.width/2) * scaleX, (element.y - 30) * scaleY);
+                        ctx.lineTo((element.x + element.width + 10) * scaleX, element.y * scaleY);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                        
+                    case 'tower':
+                        ctx.fillRect(element.x * scaleX, element.y * scaleY, element.width * scaleX, element.height * scaleY);
+                        // Tower roof
+                        ctx.fillStyle = '#d00000';
+                        ctx.beginPath();
+                        ctx.moveTo((element.x - 5) * scaleX, element.y * scaleY);
+                        ctx.lineTo((element.x + element.width/2) * scaleX, (element.y - 20) * scaleY);
+                        ctx.lineTo((element.x + element.width + 5) * scaleX, element.y * scaleY);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                        
+                    case 'moon':
+                        ctx.beginPath();
+                        ctx.arc(element.x * scaleX, element.y * scaleY, (element.size/2) * scaleX, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Moon craters
+                        ctx.fillStyle = '#adb5bd';
+                        ctx.beginPath();
+                        ctx.arc((element.x - 10) * scaleX, (element.y - 5) * scaleY, 5 * scaleX, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc((element.x + 15) * scaleX, (element.y + 10) * scaleY, 8 * scaleX, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'star':
+                        ctx.fillStyle = element.color;
+                        ctx.beginPath();
+                        ctx.arc(element.x * scaleX, element.y * scaleY, element.size * scaleX, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'sakura':
+                        ctx.fillStyle = element.color;
+                        ctx.beginPath();
+                        for (let i = 0; i < 5; i++) {
+                            const angle = (i * 2 * Math.PI) / 5;
+                            const x = element.x + Math.cos(angle) * element.size;
+                            const y = element.y + Math.sin(angle) * element.size;
+                            if (i === 0) {
+                                ctx.moveTo(x * scaleX, y * scaleY);
+                            } else {
+                                ctx.lineTo(x * scaleX, y * scaleY);
+                            }
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                }
+            });
+        }
+        
+        // Player class
+        class Player {
+            constructor(x, y, width, height) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.velocityX = 0;
+                this.velocityY = 0;
+                this.speed = 6;
+                this.jumpForce = 14;
+                this.isJumping = false;
+                this.character = selectedCharacter;
+                this.attackCooldown = 0;
+                this.facing = 1; // 1 for right, -1 for left
+                this.invincible = 0;
+            }
+            
+            update() {
+                // Apply gravity
+                this.velocityY += gameState.gravity;
+                
+                // Apply velocity
+                this.x += this.velocityX;
+                this.y += this.velocityY;
+                
+                // Update attack cooldown
+                if (this.attackCooldown > 0) {
+                    this.attackCooldown--;
+                }
+                
+                // Update invincibility
+                if (this.invincible > 0) {
+                    this.invincible--;
+                }
+                
+                // Boundary checks
+                if (this.x < 0) this.x = 0;
+                if (this.x + this.width > gameState.canvasWidth) this.x = gameState.canvasWidth - this.width;
+                
+                // Check if player fell off the screen
+                if (this.y > gameState.canvasHeight) {
+                    loseLife();
+                    resetPlayer();
+                }
+                
+                // Platform collision
+                this.isJumping = true;
+                for (let platform of gameState.platforms) {
+                    if (this.velocityY > 0 && 
+                        this.x + this.width > platform.x && 
+                        this.x < platform.x + platform.width &&
+                        this.y + this.height > platform.y && 
+                        this.y + this.height < platform.y + platform.height) {
+                        
+                        this.y = platform.y - this.height;
+                        this.velocityY = 0;
+                        this.isJumping = false;
+                    }
+                }
+                
+                // Enemy collision
+                for (let enemy of gameState.enemies) {
+                    if (enemy.active && this.x + this.width > enemy.x && 
+                        this.x < enemy.x + enemy.width &&
+                        this.y + this.height > enemy.y && 
+                        this.y < enemy.y + enemy.height) {
+                        
+                        // If player is attacking
+                        if (this.attackCooldown > 0) {
+                            enemy.active = false;
+                            this.velocityY = -this.jumpForce / 1.5;
+                            gameState.playerCoins += 5;
+                            coinsCount.textContent = gameState.playerCoins;
+                            playSound('attack');
+                        } 
+                        // If player is falling on enemy
+                        else if (this.velocityY > 0 && this.y + this.height < enemy.y + enemy.height / 2) {
+                            enemy.active = false;
+                            this.velocityY = -this.jumpForce / 1.5;
+                            gameState.playerCoins += 5;
+                            coinsCount.textContent = gameState.playerCoins;
+                            playSound('attack');
+                        } else if (this.invincible === 0) {
+                            takeDamage(20);
+                            playSound('hit');
+                        }
+                    }
+                }
+                
+                // Coin collision
+                for (let i = 0; i < gameState.coins.length; i++) {
+                    let coin = gameState.coins[i];
+                    if (this.x + this.width > coin.x && 
+                        this.x < coin.x + coin.width &&
+                        this.y + this.height > coin.y && 
+                        this.y < coin.y + coin.height) {
+                        
+                        gameState.coins.splice(i, 1);
+                        gameState.playerCoins++;
+                        coinsCount.textContent = gameState.playerCoins;
+                        playSound('coin');
+                    }
+                }
+                
+                // Flag collision (level complete)
+                if (this.x + this.width > gameState.flag.x && 
+                    this.x < gameState.flag.x + gameState.flag.width &&
+                    this.y + this.height > gameState.flag.y && 
+                    this.y < gameState.flag.y + gameState.flag.height) {
+                    
+                    showLevelComplete();
+                    playSound('levelComplete');
+                    setTimeout(() => {
+                        if (gameState.currentLevel < 3) {
+                            gameState.currentLevel++;
+                            loadLevel(gameState.currentLevel);
+                        } else {
+                            // Game completed
+                            winScreen.style.display = 'flex';
+                            gameState.gameRunning = false;
+                            playSound('win');
+                        }
+                    }, 2000);
+                }
+            }
+            
+            draw() {
+                // Draw player as emoji with effects
+                ctx.save();
+                if (this.invincible > 0 && this.invincible % 10 < 5) {
+                    ctx.globalAlpha = 0.5;
+                }
+                
+                const scale = Math.min(gameState.canvasWidth / 900, gameState.canvasHeight / 600);
+                const fontSize = this.height * scale;
+                
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ff6b6b';
+                ctx.shadowBlur = 15;
+                ctx.fillText(this.character, this.x + this.width/2, this.y + this.height/2);
+                
+                // Draw attack effect if attacking
+                if (this.attackCooldown > 0) {
+                    ctx.fillStyle = 'rgba(255, 107, 107, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(
+                        this.x + this.width/2 + (this.facing * 40), 
+                        this.y + this.height/2, 
+                        25, 0, Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // Draw sword slash effect
+                    ctx.strokeStyle = '#4cc9f0';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + this.width/2, this.y + this.height/2 - 10);
+                    ctx.lineTo(this.x + this.width/2 + (this.facing * 50), this.y + this.height/2 - 10);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+            
+            jump() {
+                if (!this.isJumping) {
+                    this.velocityY = -this.jumpForce;
+                    this.isJumping = true;
+                    playSound('jump');
+                }
+            }
+            
+            attack() {
+                if (this.attackCooldown === 0) {
+                    this.attackCooldown = 25;
+                    playSound('sword');
+                }
+            }
+            
+            moveLeft() {
+                this.velocityX = -this.speed;
+                this.facing = -1;
+            }
+            
+            moveRight() {
+                this.velocityX = this.speed;
+                this.facing = 1;
+            }
+            
+            stop() {
+                this.velocityX = 0;
+            }
+        }
+        
+        // Platform class
+        class Platform {
+            constructor(x, y, width, height, color = '#6a994e') {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = color;
+            }
+            
+            draw() {
+                // Platform with gradient
+                const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(1, '#a7c957');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // Add platform texture
+                ctx.fillStyle = '#a7c957';
+                for (let i = 0; i < this.width; i += 20) {
+                    ctx.fillRect(this.x + i, this.y, 10, 3);
+                }
+                
+                // Platform shadow
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 5;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.shadowColor = 'transparent';
+            }
+        }
+        
+        // Enemy class
+        class Enemy {
+            constructor(x, y, width, height, speed) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.speed = speed;
+                this.direction = 1; // 1 for right, -1 for left
+                this.active = true;
+                this.animation = 0;
+            }
+            
+            update() {
+                if (!this.active) return;
+                
+                this.x += this.speed * this.direction;
+                this.animation += 0.1;
+                
+                // Change direction if hitting platform edges
+                let onPlatform = false;
+                for (let platform of gameState.platforms) {
+                    if (this.x <= platform.x || this.x + this.width >= platform.x + platform.width) {
+                        if (this.y + this.height >= platform.y && this.y + this.height <= platform.y + platform.height) {
+                            onPlatform = true;
+                            if (this.x <= platform.x || this.x + this.width >= platform.x + platform.width) {
+                                this.direction *= -1;
+                            }
+                        }
+                    }
+                }
+                
+                // If not on platform, turn around
+                if (!onPlatform) {
+                    this.direction *= -1;
+                }
+            }
+            
+            draw() {
+                if (!this.active) return;
+                
+                // Draw enemy as devil emoji with effects
+                ctx.save();
+                const scale = Math.min(gameState.canvasWidth / 900, gameState.canvasHeight / 600);
+                const fontSize = this.height * scale;
+                
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#800080';
+                ctx.shadowBlur = 10;
+                ctx.fillText('😈', this.x + this.width/2, this.y + this.height/2 + Math.sin(this.animation) * 3);
+                
+                // Draw demon aura
+                ctx.strokeStyle = 'rgba(128, 0, 128, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x + this.width/2, this.y + this.height/2, this.width/2 + 5, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        }
+        
+        // Coin class
+        class Coin {
+            constructor(x, y, width = 25, height = 25) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.animation = 0;
+            }
+            
+            update() {
+                this.animation += 0.1;
+            }
+            
+            draw() {
+                // Draw coin as gem emoji with effects
+                ctx.save();
+                const scale = Math.min(gameState.canvasWidth / 900, gameState.canvasHeight / 600);
+                const fontSize = this.height * scale;
+                
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#4cc9f0';
+                ctx.shadowBlur = 15;
+                ctx.fillText('💎', this.x + this.width/2, this.y + this.height/2 + Math.sin(this.animation) * 5);
+                
+                // Add shine effect with rotation
+                ctx.save();
+                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                ctx.rotate(this.animation);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fillRect(-3, -this.height/3, 6, this.height/3);
+                ctx.restore();
+                
+                ctx.restore();
+            }
+        }
+        
+        // Flag class (end of level)
+        class Flag {
+            constructor(x, y, width = 50, height = 70) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.animation = 0;
+            }
+            
+            update() {
+                this.animation += 0.05;
+            }
+            
+            draw() {
+                this.update();
+                
+                // Draw flag as Japanese shrine/torii gate emoji with effects
+                ctx.save();
+                const scale = Math.min(gameState.canvasWidth / 900, gameState.canvasHeight / 600);
+                const fontSize = this.height * scale;
+                
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ff6b6b';
+                ctx.shadowBlur = 20;
+                ctx.fillText('⛩️', this.x + this.width/2, this.y + this.height/2);
+                
+                // Draw light beam
+                ctx.fillStyle = 'rgba(255, 107, 107, 0.3)';
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width/2, this.y + this.height);
+                ctx.lineTo(this.x + this.width/2 - 30, gameState.canvasHeight);
+                ctx.lineTo(this.x + this.width/2 + 30, gameState.canvasHeight);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Draw particles around flag
+                for (let i = 0; i < 5; i++) {
+                    const angle = this.animation + (i * Math.PI * 2 / 5);
+                    const radius = 30;
+                    const px = this.x + this.width/2 + Math.cos(angle) * radius;
+                    const py = this.y + this.height/2 + Math.sin(angle) * radius;
+                    
+                    ctx.fillStyle = `rgba(255, ${107 + i*10}, ${107 + i*10}, 0.7)`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Play sound effects
+        function playSound(type) {
+            if (!sfxEnabled) return;
+            
+            // Create audio context for simple sound generation
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            let oscillator, gainNode;
+            
+            switch(type) {
+                case 'jump':
+                    oscillator = audioContext.createOscillator();
+                    gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                    
+                case 'coin':
+                    oscillator = audioContext.createOscillator();
+                    gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.2);
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                    
+                case 'attack':
+                    oscillator = audioContext.createOscillator();
+                    gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+                    
+                    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                    
+                case 'sword':
+                    // Create a more complex sound for sword
+                    for (let i = 0; i < 3; i++) {
+                        setTimeout(() => {
+                            const osc = audioContext.createOscillator();
+                            const gain = audioContext.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            
+                            osc.frequency.setValueAtTime(300 + i*100, audioContext.currentTime);
+                            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+                            
+                            gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                            
+                            osc.start(audioContext.currentTime);
+                            osc.stop(audioContext.currentTime + 0.1);
+                        }, i * 50);
+                    }
+                    break;
+                    
+                case 'hit':
+                    oscillator = audioContext.createOscillator();
+                    gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.3);
+                    
+                    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                    
+                case 'levelComplete':
+                    // Play a victory sound
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            const osc = audioContext.createOscillator();
+                            const gain = audioContext.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioContext.destination);
+                            
+                            const notes = [523, 659, 784, 1047, 1319]; // C5, E5, G5, C6, E6
+                            osc.frequency.setValueAtTime(notes[i], audioContext.currentTime);
+                            
+                            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                            
+                            osc.start(audioContext.currentTime);
+                            osc.stop(audioContext.currentTime + 0.3);
+                        }, i * 200);
+                    }
+                    break;
+                    
+                case 'win':
+                    // Play a fanfare sound
+                    const notes = [523, 523, 659, 659, 784, 784, 659, 0, 659, 659, 784, 784, 880, 880, 784, 0];
+                    notes.forEach((freq, i) => {
+                        if (freq > 0) {
+                            setTimeout(() => {
+                                const osc = audioContext.createOscillator();
+                                const gain = audioContext.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioContext.destination);
+                                
+                                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                                
+                                gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                                
+                                osc.start(audioContext.currentTime);
+                                osc.stop(audioContext.currentTime + 0.3);
+                            }, i * 200);
+                        }
+                    });
+                    break;
+            }
+        }
+        
+        // Level definitions
+        const levels = {
+            1: {
+                name: "Floresta Assombrada",
+                playerStart: { x: 50, y: 400 },
+                platforms: [
+                    new Platform(0, 500, 200, 30, '#6a994e'),
+                    new Platform(250, 450, 200, 30, '#6a994e'),
+                    new Platform(500, 400, 150, 30, '#6a994e'),
+                    new Platform(700, 350, 100, 30, '#6a994e'),
+                    new Platform(600, 250, 100, 30, '#6a994e'),
+                    new Platform(400, 300, 100, 30, '#6a994e'),
+                    new Platform(200, 350, 100, 30, '#6a994e'),
+                    new Platform(50, 250, 100, 30, '#6a994e')
+                ],
+                enemies: [
+                    new Enemy(300, 430, 35, 35, 2),
+                    new Enemy(550, 380, 35, 35, 2),
+                    new Enemy(200, 330, 35, 35, 2)
+                ],
+                coins: [
+                    new Coin(100, 460),
+                    new Coin(300, 410),
+                    new Coin(550, 360),
+                    new Coin(650, 310),
+                    new Coin(450, 260),
+                    new Coin(250, 310),
+                    new Coin(80, 210)
+                ],
+                flag: new Flag(750, 250)
+            },
+            2: {
+                name: "Montanha Nevada",
+                playerStart: { x: 50, y: 400 },
+                platforms: [
+                    new Platform(0, 500, 150, 30, '#6a994e'),
+                    new Platform(200, 450, 150, 30, '#6a994e'),
+                    new Platform(400, 400, 150, 30, '#6a994e'),
+                    new Platform(600, 350, 150, 30, '#6a994e'),
+                    new Platform(500, 250, 150, 30, '#6a994e'),
+                    new Platform(300, 300, 150, 30, '#6a994e'),
+                    new Platform(100, 350, 150, 30, '#6a994e'),
+                    new Platform(200, 200, 150, 30, '#6a994e'),
+                    new Platform(400, 150, 150, 30, '#6a994e')
+                ],
+                enemies: [
+                    new Enemy(250, 430, 35, 35, 2.5),
+                    new Enemy(450, 380, 35, 35, 2.5),
+                    new Enemy(350, 280, 35, 35, 2.5),
+                    new Enemy(550, 230, 35, 35, 2.5)
+                ],
+                coins: [
+                    new Coin(70, 460),
+                    new Coin(270, 410),
+                    new Coin(470, 360),
+                    new Coin(570, 310),
+                    new Coin(370, 260),
+                    new Coin(170, 310),
+                    new Coin(250, 170),
+                    new Coin(450, 120)
+                ],
+                flag: new Flag(450, 100)
+            },
+            3: {
+                name: "Castelo de Muzan",
+                playerStart: { x: 50, y: 400 },
+                platforms: [
+                    new Platform(0, 500, 100, 30, '#6a994e'),
+                    new Platform(150, 450, 100, 30, '#6a994e'),
+                    new Platform(300, 400, 100, 30, '#6a994e'),
+                    new Platform(450, 350, 100, 30, '#6a994e'),
+                    new Platform(600, 300, 100, 30, '#6a994e'),
+                    new Platform(600, 200, 100, 30, '#6a994e'),
+                    new Platform(450, 250, 100, 30, '#6a994e'),
+                    new Platform(300, 300, 100, 30, '#6a994e'),
+                    new Platform(150, 350, 100, 30, '#6a994e'),
+                    new Platform(0, 250, 100, 30, '#6a994e'),
+                    new Platform(150, 150, 100, 30, '#6a994e'),
+                    new Platform(300, 100, 100, 30, '#6a994e')
+                ],
+                enemies: [
+                    new Enemy(180, 430, 35, 35, 3),
+                    new Enemy(330, 380, 35, 35, 3),
+                    new Enemy(480, 330, 35, 35, 3),
+                    new Enemy(630, 280, 35, 35, 3),
+                    new Enemy(480, 230, 35, 35, 3),
+                    new Enemy(330, 280, 35, 35, 3),
+                    new Enemy(180, 330, 35, 35, 3)
+                ],
+                coins: [
+                    new Coin(40, 460),
+                    new Coin(190, 410),
+                    new Coin(340, 360),
+                    new Coin(490, 310),
+                    new Coin(640, 260),
+                    new Coin(490, 210),
+                    new Coin(340, 260),
+                    new Coin(190, 310),
+                    new Coin(40, 220),
+                    new Coin(190, 120),
+                    new Coin(340, 70)
+                ],
+                flag: new Flag(350, 50)
+            }
+        };
+        
+        // Scale game elements based on canvas size
+        function scaleGameElements() {
+            const scaleX = gameState.canvasWidth / 900;
+            const scaleY = gameState.canvasHeight / 600;
+            
+            // Scale all game elements
+            for (let levelKey in levels) {
+                const level = levels[levelKey];
+                
+                // Scale player start position
+                level.playerStart.x *= scaleX;
+                level.playerStart.y *= scaleY;
+                
+                // Scale platforms
+                level.platforms.forEach(platform => {
+                    platform.x *= scaleX;
+                    platform.y *= scaleY;
+                    platform.width *= scaleX;
+                    platform.height *= scaleY;
+                });
+                
+                // Scale enemies
+                level.enemies.forEach(enemy => {
+                    enemy.x *= scaleX;
+                    enemy.y *= scaleY;
+                    enemy.width *= scaleX;
+                    enemy.height *= scaleY;
+                    enemy.speed *= scaleX;
+                });
+                
+                // Scale coins
+                level.coins.forEach(coin => {
+                    coin.x *= scaleX;
+                    coin.y *= scaleY;
+                    coin.width *= scaleX;
+                    coin.height *= scaleY;
+                });
+                
+                // Scale flag
+                level.flag.x *= scaleX;
+                level.flag.y *= scaleY;
+                level.flag.width *= scaleX;
+                level.flag.height *= scaleY;
+            }
+        }
+        
+        // Load a specific level
+        function loadLevel(levelNum) {
+            const level = levels[levelNum];
+            if (!level) return;
+            
+            // Scale elements for current canvas size
+            scaleGameElements();
+            
+            gameState.platforms = level.platforms;
+            gameState.enemies = level.enemies;
+            gameState.coins = level.coins;
+            gameState.flag = level.flag;
+            
+            // Reset player position
+            resetPlayer();
+            
+            // Update HUD
+            levelDisplay.textContent = levelNum;
+            gameState.currentLevel = levelNum;
+            gameState.gameRunning = true;
+            
+            // Hide all screens
+            menuScreen.style.display = 'none';
+            levelSelectScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            winScreen.style.display = 'none';
+            trailerScreen.style.display = 'none';
+            levelComplete.style.display = 'none';
+        }
+        
+        // Reset player to level start
+        function resetPlayer() {
+            const level = levels[gameState.currentLevel];
+            const scaleX = gameState.canvasWidth / 900;
+            const scaleY = gameState.canvasHeight / 600;
+            
+            gameState.player = new Player(
+                level.playerStart.x, 
+                level.playerStart.y, 
+                45 * scaleX, 
+                45 * scaleY
+            );
+            gameState.player.character = selectedCharacter;
+            gameState.health = 100;
+            updateHealthBar();
+        }
+        
+        // Show level complete effect
+        function showLevelComplete() {
+            levelComplete.style.display = 'flex';
+            setTimeout(() => {
+                levelComplete.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Take damage
+        function takeDamage(amount) {
+            gameState.health -= amount;
+            if (gameState.health < 0) gameState.health = 0;
+            updateHealthBar();
+            
+            gameState.player.invincible = 60; // 1 second of invincibility
+            
+            if (gameState.health <= 0) {
+                loseLife();
+            }
+        }
+        
+        // Update health bar
+        function updateHealthBar() {
+            healthFill.style.width = `${gameState.health}%`;
+        }
+        
+        // Lose a life
+        function loseLife() {
+            gameState.lives--;
+            livesCount.textContent = gameState.lives;
+            
+            if (gameState.lives <= 0) {
+                gameOverScreen.style.display = 'flex';
+                gameState.gameRunning = false;
+                playSound('gameOver');
+            } else {
+                resetPlayer();
+            }
+        }
+        
+        // Reset game state
+        function resetGame() {
+            gameState.lives = 3;
+            gameState.playerCoins = 0;
+            gameState.currentLevel = 1;
+            gameState.health = 100;
+            livesCount.textContent = gameState.lives;
+            coinsCount.textContent = gameState.playerCoins;
+            levelDisplay.textContent = gameState.currentLevel;
+            updateHealthBar();
+        }
+        
+        // Game loop
+        function gameLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, gameState.canvasWidth, gameState.canvasHeight);
+            
+            // Draw background
+            drawBackground(gameState.currentLevel);
+            
+            // Update and draw platforms
+            for (let platform of gameState.platforms) {
+                platform.draw();
+            }
+            
+            // Update and draw coins
+            for (let coin of gameState.coins) {
+                coin.update();
+                coin.draw();
+            }
+            
+            // Update and draw enemies
+            for (let enemy of gameState.enemies) {
+                enemy.update();
+                enemy.draw();
+            }
+            
+            // Draw flag
+            if (gameState.flag) {
+                gameState.flag.draw();
+            }
+            
+            // Update and draw player
+            if (gameState.player) {
+                gameState.player.update();
+                gameState.player.draw();
+            }
+            
+            // Handle player movement based on keys pressed
+            if (gameState.keys['ArrowLeft'] || gameState.keys['KeyA']) {
+                gameState.player.moveLeft();
+            } else if (gameState.keys['ArrowRight'] || gameState.keys['KeyD']) {
+                gameState.player.moveRight();
+            } else {
+                gameState.player.stop();
+            }
+            
+            // Handle attack
+            if ((gameState.keys['KeyZ'] || gameState.keys['KeyX']) && gameState.player) {
+                gameState.player.attack();
+            }
+            
+            // Continue game loop if game is running
+            if (gameState.gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Event listeners for buttons
+        startBtn.addEventListener('click', () => {
+            resetGame();
+            loadLevel(1);
+            gameLoop();
+        });
+        
+        levelSelectBtn.addEventListener('click', () => {
+            menuScreen.style.display = 'none';
+            levelSelectScreen.style.display = 'flex';
+        });
+        
+        level1Btn.addEventListener('click', () => {
+            resetGame();
+            loadLevel(1);
+            gameLoop();
+        });
+        
+        level2Btn.addEventListener('click', () => {
+            resetGame();
+            loadLevel(2);
+            gameLoop();
+        });
+        
+        level3Btn.addEventListener('click', () => {
+            resetGame();
+            loadLevel(3);
+            gameLoop();
+        });
+        
+        backToMenuBtn.addEventListener('click', () => {
+            levelSelectScreen.style.display = 'none';
+            menuScreen.style.display = 'flex';
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            resetGame();
+            loadLevel(gameState.currentLevel);
+            gameLoop();
+        });
+        
+        giveUpBtn.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            menuScreen.style.display = 'flex';
+        });
+        
+        watchTrailerBtn.addEventListener('click', () => {
+            winScreen.style.display = 'none';
+            trailerScreen.style.display = 'flex';
+        });
+        
+        playAgainBtn.addEventListener('click', () => {
+            resetGame();
+            loadLevel(1);
+            gameLoop();
+        });
+        
+        backAfterTrailerBtn.addEventListener('click', () => {
+            trailerScreen.style.display = 'none';
+            menuScreen.style.display = 'flex';
+        });
+        
+        // Character selection
+        characterOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                characterOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedCharacter = option.getAttribute('data-character');
+                playSound('coin'); // Play sound when selecting character
+            });
+        });
+        
+        // Audio controls
+        bgmToggle.addEventListener('click', () => {
+            bgmEnabled = !bgmEnabled;
+            bgmToggle.textContent = bgmEnabled ? '♪' : '🔇';
+            // In a real game, you would pause/resume background music here
+        });
+        
+        sfxToggle.addEventListener('click', () => {
+            sfxEnabled = !sfxEnabled;
+            sfxToggle.textContent = sfxEnabled ? '🔊' : '🔇';
+        });
+        
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
+            gameState.keys[e.code] = true;
+            
+            if ((e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') && gameState.player) {
+                gameState.player.jump();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            gameState.keys[e.code] = false;
+        });
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            if (gameState.gameRunning) {
+                // Rescale game elements if the game is running
+                scaleGameElements();
+                resetPlayer();
+            }
+        });
+        
+        // Initialize game
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+                resizeCanvas();
+                loadBackgrounds();
+                createParticles();
+                resetGame();
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
